@@ -41,7 +41,7 @@
 
 @theme inline {
   --font-sans: var(--font-sans), system-ui, sans-serif;
-  --font-heading: var(--font-heading), serif;
+  --font-heading: 'DM Sans', var(--font-heading), sans-serif;
   --font-mono: 'Geist Mono', 'Geist Mono Fallback', monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -155,6 +155,7 @@
 
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Sharp Top Highlight (Specular Reflection) */
@@ -184,6 +185,115 @@
   pointer-events: none;
 }
 
+/* Header Pill - Structure from liquid-pill, shadows from glass-droplet */
+.header-pill {
+  /* Base structure from liquid-pill */
+  background: rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+
+  /* Shadow styling from glass-droplet */
+  box-shadow:
+    0 12px 25px -4px rgba(0, 0, 0, 0.4),
+    /* Deep external base drop shadow */
+    0 4px 8px -2px rgba(0, 0, 0, 0.2),
+    /* Sharp contact shadow */
+    inset 0 10px 14px -5px rgba(0, 0, 0, 0.35),
+    /* TOP inner dark shadow (creates bead volume & contrasts the highlight) */
+    inset 0 -12px 16px -6px rgba(255, 255, 255, 1),
+    /* BOTTOM inner glow (light refracting through) */
+    inset 0 0 12px rgba(0, 0, 0, 0.1);
+  /* Edge darkening */
+}
+
+/* Pseudo-elements from liquid-pill for pill shape */
+.header-pill::before {
+  content: '';
+  position: absolute;
+  top: 4%;
+  left: 5%;
+  right: 5%;
+  height: 38%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.1) 80%, transparent 100%);
+  border-radius: inherit;
+  mask-image: radial-gradient(ellipse 100% 100% at top, black 0%, black 60%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 100% 100% at top, black 0%, black 60%, transparent 100%);
+  pointer-events: none;
+  z-index: 10;
+}
+
+.header-pill::after {
+  content: '';
+  position: absolute;
+  bottom: 0%;
+  left: 8%;
+  right: 8%;
+  height: 35%;
+  background: radial-gradient(ellipse at bottom, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Liquid Pill effect - Glass droplet physics for pill-shaped controls */
+.liquid-pill {
+  /* Match droplet's dark base for maximum highlight contrast */
+  background: rgba(0, 0, 0, 0.05);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+
+  /* Preserve exact droplet volumetric shadow physics */
+  box-shadow:
+    0 12px 25px -4px rgba(0, 0, 0, 0.4),
+    /* Deep external base drop shadow */
+    0 4px 8px -2px rgba(0, 0, 0, 0.2),
+    /* Sharp contact shadow */
+    inset 0 10px 14px -5px rgba(0, 0, 0, 0.35),
+    /* TOP inner dark shadow (creates volume & contrasts highlight) */
+    inset 0 -12px 16px -6px rgba(255, 255, 255, 1),
+    /* BOTTOM inner glow (light refracting through) - FULL WHITE */
+    inset 0 0 12px rgba(0, 0, 0, 0.1);
+  /* Edge darkening */
+
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-sizing: border-box;
+}
+
+/* Top Specular Highlight - adapted for horizontal pill shape */
+.liquid-pill::before {
+  content: '';
+  position: absolute;
+  top: 4%;
+  left: 5%;
+  right: 5%;
+  height: 38%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.1) 80%, transparent 100%);
+  border-radius: inherit;
+  mask-image: radial-gradient(ellipse 100% 100% at top, black 0%, black 60%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 100% 100% at top, black 0%, black 60%, transparent 100%);
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Bottom Reflection Glow */
+.liquid-pill::after {
+  content: '';
+  position: absolute;
+  bottom: 0%;
+  left: 8%;
+  right: 8%;
+  height: 35%;
+  background: radial-gradient(ellipse at bottom, rgba(255, 255, 255, 0.4) 0%, transparent 70%);
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 10;
+}
+
 /* Liquid Panel effect (Adapts droplet lighting physics to rectangular/pill panels) */
 .liquid-panel {
   background: rgba(0, 0, 0, 0.04);
@@ -205,6 +315,7 @@
   position: relative;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  box-sizing: border-box;
 }
 
 .liquid-panel::before {
