@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
-import { Outfit, Cinzel } from 'next/font/google'
+import { Outfit } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 
 const fontSans = Outfit({ subsets: ["latin"], weight: ["100", "200", "300", "400", "500", "600", "700"], variable: "--font-sans" });
-const fontHeading = Cinzel({ subsets: ["latin"], weight: ["400", "500", "600", "700", "800", "900"], variable: "--font-heading" });
+const fontHeading = Outfit({ subsets: ["latin"], weight: ["500", "600", "700", "800"], variable: "--font-heading" });
 
 export const metadata: Metadata = {
   title: 'v0 App',
@@ -36,6 +36,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap" rel="stylesheet" />
+      </head>
       <body className={`${fontSans.variable} ${fontHeading.variable} font-sans antialiased`}>
         {children}
         <Analytics />

@@ -29,7 +29,7 @@ export function TimelineHorizontal({ nodeIds }: { nodeIds: string[] }) {
 
 export function TimelineVertical({ nodeIds }: { nodeIds: string[] }) {
     return (
-        <div className="w-full h-full flex justify-center py-32 custom-scrollbar overflow-y-auto relative min-h-[500px]">
+        <div className="w-full h-full flex justify-center pt-48 pb-32 custom-scrollbar overflow-y-auto relative min-h-[500px]">
             <div className="flex flex-col space-y-24 items-center min-h-max pl-32 pr-32">
                 {nodeIds.length === 0 && (
                     <div className="text-foreground/40 italic font-sans py-8 tracking-wide">Start building your story...</div>
@@ -42,7 +42,7 @@ export function TimelineVertical({ nodeIds }: { nodeIds: string[] }) {
                 </AnimatePresence>
             </div>
             {/* Render the timeline line after the nodes so it visually masks the stems */}
-            <div className="absolute top-0 bottom-0 w-[8px] timeline-line-gradient-vertical left-1/2 -translate-x-1/2 z-10 pointer-events-none" />
+            <div className="absolute top-28 bottom-0 w-[8px] timeline-line-gradient-vertical left-1/2 -translate-x-1/2 z-10 pointer-events-none" />
         </div>
     )
 }

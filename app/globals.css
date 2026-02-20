@@ -209,6 +209,24 @@
   /* Edge darkening */
 }
 
+/* Toggle Subtle - Reduces glass-droplet intensity for embedded toggle appearance */
+.toggle-subtle {
+  /* Override glass-droplet shadows to be more subtle */
+  box-shadow:
+    0 4px 8px -2px rgba(0, 0, 0, 0.25),
+    /* Reduced external shadow */
+    inset 0 2px 4px -1px rgba(0, 0, 0, 0.25),
+    /* Reduced top inner shadow */
+    inset 0 -4px 6px -2px rgba(255, 255, 255, 0.4),
+    /* Reduced bottom glow */
+    inset 0 0 4px rgba(0, 0, 0, 0.1) !important;
+  /* Reduced edge darkening */
+
+  /* Prevent layout issues */
+  transform: scale(1) !important;
+  margin: 0 !important;
+}
+
 /* Pseudo-elements from liquid-pill for pill shape */
 .header-pill::before {
   content: '';

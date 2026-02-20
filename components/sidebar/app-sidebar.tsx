@@ -95,7 +95,7 @@ export function AppSidebar() {
 
     return (
         <Sidebar className="border-r-0 bg-transparent p-4 shrink-0 transition-all duration-300">
-            <GlassPanel intensity="liquid" className="h-[calc(100vh-2rem)] w-full flex flex-col overflow-hidden">
+            <GlassPanel intensity="strong" className="h-[calc(100vh-2rem)] w-full flex flex-col overflow-hidden">
 
                 {sidebarView === 'entity-detail' ? (
                     <div className="p-6 h-full w-full custom-scrollbar overflow-y-auto">
