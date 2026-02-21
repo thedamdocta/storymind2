@@ -8,6 +8,8 @@ import type {
   TimelineOrientation,
   NodeViewState,
   NodeImage,
+  StartingNode,
+  TimelineOffset,
 } from './types'
 import { getNextNodeColor, getEntityColor } from './entity-colors'
 
@@ -19,11 +21,17 @@ interface StoryState {
   mentions: EntityMention[]
   nodeOrder: string[]
   orientation: TimelineOrientation
+  startingNode: StartingNode | null
+  timelineOffset: TimelineOffset
 
   // UI state (not persisted)
   nodeViewStates: Record<string, NodeViewState>
   selectedEntityId: string | null
   sidebarView: 'entities' | 'entity-detail'
+  isAnimatingNode: boolean
+  animatingNodeId: string | null
+  viewportPan: { x: number; y: number } // Infinite canvas pan position
+  viewportZoom: number // Zoom level (0.1 to 2.0)
 
   // Node actions
   addNode: (title: string) => string
@@ -52,6 +60,14 @@ interface StoryState {
   setOrientation: (orientation: TimelineOrientation) => void
   setProjectName: (name: string) => void
   setSidebarView: (view: 'entities' | 'entity-detail') => void
+
+  // Progressive timeline actions
+  createStartingNode: (title?: string) => void
+  updateStartingNode: (updates: Partial<StartingNode>) => void
+  createNextNode: () => Promise<string>
+  setTimelineOffset: (offset: TimelineOffset) => void
+  setViewportPan: (pan: { x: number; y: number }) => void
+  setViewportZoom: (zoom: number) => void
 }
 
 function generateId(): string {
@@ -67,9 +83,15 @@ export const useStoryStore = create<StoryState>()(
       mentions: [],
       nodeOrder: [],
       orientation: 'horizontal',
+      startingNode: null,
+      timelineOffset: { x: 0, y: 0 },
       nodeViewStates: {},
       selectedEntityId: null,
       sidebarView: 'entities',
+      isAnimatingNode: false,
+      animatingNodeId: null,
+      viewportPan: { x: 0, y: 0 },
+      viewportZoom: 1.0,
 
       addNode: (title: string) => {
         const id = generateId()
@@ -217,6 +239,56 @@ export const useStoryStore = create<StoryState>()(
       setOrientation: (orientation) => set({ orientation }),
       setProjectName: (name) => set({ projectName: name }),
       setSidebarView: (view) => set({ sidebarView: view }),
+
+      createStartingNode: (title = '') => {
+        const startingNode: StartingNode = {
+          id: 'starting-node',
+          title: title || get().projectName || 'My Story',
+          content: null,
+          plainText: '',
+          color: '#8B5CF6', // Violet color
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        }
+        set({ startingNode })
+      },
+
+      updateStartingNode: (updates) => {
+        set((state) => ({
+          startingNode: state.startingNode
+            ? { ...state.startingNode, ...updates, updatedAt: Date.now() }
+            : null,
+        }))
+      },
+
+      createNextNode: async () => {
+        const { nodeOrder, addNode } = get()
+
+        // Set animating state
+        set({ isAnimatingNode: true })
+
+        // Wait for path animation to mostly complete
+        await new Promise((resolve) => setTimeout(resolve, 500))
+
+        // Create the node (triggers entrance animation)
+        const newNodeId = addNode('')
+        set({ animatingNodeId: newNodeId })
+
+        // Wait for node entrance to complete
+        await new Promise((resolve) => setTimeout(resolve, 400))
+
+        // Clear animation state
+        set({
+          isAnimatingNode: false,
+          animatingNodeId: null,
+        })
+
+        return newNodeId
+      },
+
+      setTimelineOffset: (offset) => set({ timelineOffset: offset }),
+      setViewportPan: (pan) => set({ viewportPan: pan }),
+      setViewportZoom: (zoom) => set({ viewportZoom: Math.max(0.1, Math.min(2.0, zoom)) }),
     }),
     {
       name: 'timeline-story-editor',
@@ -227,7 +299,29 @@ export const useStoryStore = create<StoryState>()(
         mentions: state.mentions,
         nodeOrder: state.nodeOrder,
         orientation: state.orientation,
+        startingNode: state.startingNode,
+        timelineOffset: state.timelineOffset,
       }),
+      onRehydrateStorage: () => (state) => {
+        // Migration: Auto-create starting node if it doesn't exist
+        if (state && !state.startingNode) {
+          const startingNode: StartingNode = {
+            id: 'starting-node',
+            title: state.projectName || 'My Story',
+            content: null,
+            plainText: '',
+            color: '#8B5CF6',
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+          }
+          state.startingNode = startingNode
+        }
+
+        // Ensure timelineOffset exists
+        if (state && !state.timelineOffset) {
+          state.timelineOffset = { x: 0, y: 0 }
+        }
+      },
     }
   )
 )

@@ -1,0 +1,74 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - heading "Timeline" [level=2] [ref=e8]
+        - paragraph [ref=e9]: Entities Directory
+        - generic [ref=e10]:
+          - img [ref=e11]
+          - textbox "Search entities..." [ref=e14]
+      - generic [ref=e16]:
+        - generic [ref=e17]: Categories
+        - list [ref=e19]:
+          - listitem [ref=e20]:
+            - button "Characters 0" [ref=e21]:
+              - img [ref=e22]
+              - generic [ref=e27]: Characters
+              - generic [ref=e28]: "0"
+          - listitem [ref=e29]:
+            - button "Places 0" [ref=e30]:
+              - img [ref=e31]
+              - generic [ref=e34]: Places
+              - generic [ref=e35]: "0"
+          - listitem [ref=e36]:
+            - button "Events 0" [ref=e37]:
+              - img [ref=e38]
+              - generic [ref=e40]: Events
+              - generic [ref=e41]: "0"
+          - listitem [ref=e42]:
+            - button "Storylines 0" [ref=e43]:
+              - img [ref=e44]
+              - generic [ref=e48]: Storylines
+              - generic [ref=e49]: "0"
+          - listitem [ref=e50]:
+            - button "Time Periods 0" [ref=e51]:
+              - img [ref=e52]
+              - generic [ref=e54]: Time Periods
+              - generic [ref=e55]: "0"
+    - main [ref=e56]:
+      - generic [ref=e58]:
+        - generic [ref=e59]:
+          - textbox "Story Title" [ref=e60]: Untitled Story
+          - generic [ref=e62]:
+            - button "Horizontal Timeline" [ref=e63]:
+              - img
+            - button "Vertical Timeline" [ref=e64]:
+              - img
+        - generic [ref=e66]:
+          - img
+          - generic [ref=e69] [cursor=pointer]: Untitled Story
+          - generic [ref=e70]:
+            - button "Delete node" [ref=e71]:
+              - img [ref=e72]
+            - generic [ref=e78] [cursor=pointer]: Untitled Node
+          - generic [ref=e79]:
+            - button "Delete node" [ref=e80]:
+              - img [ref=e81]
+            - generic [ref=e87] [cursor=pointer]: Untitled Node
+          - generic [ref=e88]:
+            - button "Delete node" [ref=e89]:
+              - img [ref=e90]
+            - generic [ref=e96] [cursor=pointer]: Untitled Node
+          - generic [ref=e97]:
+            - button "Delete node" [ref=e98]:
+              - img [ref=e99]
+            - generic [ref=e105] [cursor=pointer]: Untitled Node
+          - button [ref=e106]:
+            - img [ref=e107]
+  - button "Open Next.js Dev Tools" [ref=e113] [cursor=pointer]:
+    - img [ref=e114]
+  - alert [ref=e117]
+```

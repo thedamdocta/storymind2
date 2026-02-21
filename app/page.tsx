@@ -32,8 +32,8 @@ export default function Home() {
 
             <AppSidebar />
 
-            <SidebarInset className="bg-transparent relative flex-1 flex flex-col h-full overflow-hidden z-10 p-4">
-                <div className="flex-1 w-full h-full relative glass-subtle rounded-3xl border border-white/50 shadow-sm overflow-hidden flex items-center justify-center">
+            <SidebarInset className="bg-transparent relative flex-1 flex flex-col h-full overflow-hidden z-10">
+                <div className="flex-1 w-full h-full relative overflow-hidden flex items-center justify-center">
                     <TimelineView />
                 </div>
             </SidebarInset>

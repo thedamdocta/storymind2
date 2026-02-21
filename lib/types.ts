@@ -36,6 +36,18 @@ export interface NodeImage {
 
 export type TimelineOrientation = 'horizontal' | 'vertical'
 
+export interface StartingNode {
+  id: string
+  title: string
+  content: Record<string, unknown> | null // Tiptap JSONContent
+  plainText: string
+  color: string
+  createdAt: number
+  updatedAt: number
+}
+
+export type TimelineOffset = { x: number; y: number }
+
 export interface StoryProject {
   id: string
   name: string
@@ -44,6 +56,8 @@ export interface StoryProject {
   mentions: EntityMention[]
   nodeOrder: string[]
   orientation: TimelineOrientation
+  startingNode: StartingNode | null
+  timelineOffset: TimelineOffset
 }
 
 export type ScriptFormat = 'screenplay' | 'stageplay' | 'novel' | 'synopsis'
