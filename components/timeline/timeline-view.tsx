@@ -148,8 +148,9 @@ export function TimelineView() {
     const newNodePosition = nodePositions[newNodeIndex]
     if (!newNodePosition) return
 
-    // Delay the pan until after timeline animation completes (2000ms total animation)
-    // Node is created at 1600ms, so we wait 500ms more for the branch to finish growing
+    // Delay the pan until after timeline animation completes
+    // Animation: main line (1000ms) + stem (600ms) = 1600ms total
+    // Node appears at 1400ms, so we wait 300ms for stem to finish
     const panTimer = setTimeout(() => {
       const targetX = newNodePosition.x * viewportZoom
       const targetY = newNodePosition.y * viewportZoom
@@ -161,7 +162,7 @@ export function TimelineView() {
         const newPanY = container.offsetHeight / 2 - targetY
         setViewportPan({ x: currentPanRef.current.x, y: newPanY })
       }
-    }, 500)
+    }, 300)
 
     lastAnimatingNodeIdRef.current = animatingNodeId
     return () => clearTimeout(panTimer)

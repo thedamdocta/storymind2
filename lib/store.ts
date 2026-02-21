@@ -267,16 +267,18 @@ export const useStoryStore = create<StoryState>()(
         // Set animating state
         set({ isAnimatingNode: true })
 
-        // Wait for path animation to mostly complete (2.0s total animation)
-        // Let the branch grow ~80% before the node appears
-        await new Promise((resolve) => setTimeout(resolve, 1600))
+        // Animation timing:
+        // - Main line grows: 0-1000ms (1s)
+        // - Stem grows: 1000-1600ms (0.6s)
+        // - Node appears: ~1400ms (near end of stem)
+        await new Promise((resolve) => setTimeout(resolve, 1400))
 
         // Create the node (triggers entrance animation)
         const newNodeId = addNode('')
         set({ animatingNodeId: newNodeId })
 
         // Wait for node entrance to complete
-        await new Promise((resolve) => setTimeout(resolve, 400))
+        await new Promise((resolve) => setTimeout(resolve, 300))
 
         // Clear animation state
         set({

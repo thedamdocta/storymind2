@@ -19,57 +19,67 @@ const BASE_X = 100 // Starting X position
 const BASE_Y = 300 // Starting Y position
 
 /**
- * Calculate the SVG path for the timeline
- * Creates a path that extends along the main axis (horizontal or vertical)
- * with perpendicular stems that alternate direction (up-down-up-down or left-right-left-right)
+ * Calculate the main timeline path (straight line through all junctions)
  */
-function calculateTimelinePath(
-  nodes: StoryNode[],
+function calculateMainLinePath(
+  nodeCount: number,
   startingNode: StartingNode,
   orientation: 'horizontal' | 'vertical',
-  animatingToIndex: number
 ): string {
-  const STARTING_NODE_RADIUS = 40 // Half of 80px starting node
+  const STARTING_NODE_RADIUS = 40
 
-  // Timeline starts at the END of the starting node (not through it)
   const startingNodePos = {
     x: orientation === 'horizontal' ? BASE_X + STARTING_NODE_RADIUS : BASE_X,
     y: orientation === 'vertical' ? BASE_Y + STARTING_NODE_RADIUS : BASE_Y
   }
 
-  // Start at the end of the starting node
-  let path = `M ${startingNodePos.x} ${startingNodePos.y}`
+  if (orientation === 'horizontal') {
+    const endX = startingNodePos.x + nodeCount * NODE_SPACING
+    return `M ${startingNodePos.x} ${startingNodePos.y} L ${endX} ${startingNodePos.y}`
+  } else {
+    const endY = startingNodePos.y + nodeCount * NODE_SPACING
+    return `M ${startingNodePos.x} ${startingNodePos.y} L ${startingNodePos.x} ${endY}`
+  }
+}
 
-  // For each node, draw: main line segment → stem out → stem back
-  // This creates a continuous path that branches naturally
-  for (let i = 0; i <= animatingToIndex && i < nodes.length; i++) {
+/**
+ * Calculate individual stem paths
+ */
+function calculateStemPaths(
+  nodeCount: number,
+  startingNode: StartingNode,
+  orientation: 'horizontal' | 'vertical',
+): Array<{ path: string; index: number }> {
+  const STARTING_NODE_RADIUS = 40
+  const stems: Array<{ path: string; index: number }> = []
+
+  const startingNodePos = {
+    x: orientation === 'horizontal' ? BASE_X + STARTING_NODE_RADIUS : BASE_X,
+    y: orientation === 'vertical' ? BASE_Y + STARTING_NODE_RADIUS : BASE_Y
+  }
+
+  for (let i = 0; i < nodeCount; i++) {
     const isEven = i % 2 === 0
     const mainAxisOffset = (i + 1) * NODE_SPACING
 
     if (orientation === 'horizontal') {
       const mainX = startingNodePos.x + mainAxisOffset
       const stemY = startingNodePos.y + (isEven ? -STEM_LENGTH : STEM_LENGTH)
-
-      // Grow along main line to junction
-      path += ` L ${mainX} ${startingNodePos.y}`
-      // Branch out to node
-      path += ` L ${mainX} ${stemY}`
-      // Return to main line to continue
-      path += ` L ${mainX} ${startingNodePos.y}`
+      stems.push({
+        path: `M ${mainX} ${startingNodePos.y} L ${mainX} ${stemY}`,
+        index: i
+      })
     } else {
       const mainY = startingNodePos.y + mainAxisOffset
       const stemX = startingNodePos.x + (isEven ? -STEM_LENGTH : STEM_LENGTH)
-
-      // Grow along main line to junction
-      path += ` L ${startingNodePos.x} ${mainY}`
-      // Branch out to node
-      path += ` L ${stemX} ${mainY}`
-      // Return to main line to continue
-      path += ` L ${startingNodePos.x} ${mainY}`
+      stems.push({
+        path: `M ${startingNodePos.x} ${mainY} L ${stemX} ${mainY}`,
+        index: i
+      })
     }
   }
 
-  return path
+  return stems
 }
 
 /**
@@ -90,45 +100,49 @@ export function AnimatedTimelineSVG({
   isAnimating,
   animatingToIndex,
 }: AnimatedTimelineSVGProps) {
-  const pathD = React.useMemo(
-    () => calculateTimelinePath(nodes, startingNode, orientation, animatingToIndex),
-    [nodes, startingNode, orientation, animatingToIndex]
+  // Calculate main line path (grows continuously)
+  const mainLinePath = React.useMemo(
+    () => calculateMainLinePath(nodes.length, startingNode, orientation),
+    [nodes.length, startingNode, orientation]
   )
 
-  // Calculate the previous path length for animation
-  const previousIndex = React.useRef(-1)
-  const [pathLength, setPathLength] = React.useState(1)
+  // Calculate all stem paths
+  const stemPaths = React.useMemo(
+    () => calculateStemPaths(nodes.length, startingNode, orientation),
+    [nodes.length, startingNode, orientation]
+  )
+
+  // Track animation state for main line
+  const previousNodeCount = React.useRef(0)
+  const [mainLineLength, setMainLineLength] = React.useState(1)
 
   React.useEffect(() => {
     if (isAnimating && nodes.length > 0) {
-      // Calculate what fraction of the NEW path represents the OLD nodes
-      // This ensures we only animate the NEW segment, not redraw everything
-      const totalNodes = animatingToIndex + 1
-      const previousNodeCount = Math.max(0, previousIndex.current + 1)
+      const currentNodeCount = nodes.length
+      const prevCount = previousNodeCount.current
 
-      // Start from showing previous nodes (fraction of new path)
-      const startLength = previousNodeCount / totalNodes
-      setPathLength(startLength)
+      // Start from showing previous portion
+      const startLength = prevCount / currentNodeCount
+      setMainLineLength(startLength)
 
-      // Then animate to full path after a brief delay
+      // Animate to new length
       const timer = setTimeout(() => {
-        setPathLength(1)
-        previousIndex.current = animatingToIndex
+        setMainLineLength(1)
+        previousNodeCount.current = currentNodeCount
       }, 50)
 
       return () => clearTimeout(timer)
     } else if (!isAnimating) {
-      // When not animating, show full path
-      setPathLength(1)
+      setMainLineLength(1)
     }
-  }, [isAnimating, animatingToIndex, nodes.length])
+  }, [isAnimating, nodes.length])
 
   // Calculate connector line to plus button
   const connectorLine = React.useMemo(() => {
     const STARTING_NODE_RADIUS = 40
-    const PLUS_BUTTON_RADIUS = 20 // 40px diameter / 2
-    const TIMELINE_STROKE_RADIUS = 8 // 16px stroke width / 2
-    const GAP = 2 // Small gap between line and plus button
+    const PLUS_BUTTON_RADIUS = 20
+    const TIMELINE_STROKE_RADIUS = 8
+    const GAP = 2
     const timelineStartX = orientation === 'horizontal' ? BASE_X + STARTING_NODE_RADIUS : BASE_X
     const timelineStartY = orientation === 'vertical' ? BASE_Y + STARTING_NODE_RADIUS : BASE_Y
 
@@ -154,7 +168,6 @@ export function AnimatedTimelineSVG({
       }}
     >
       <defs>
-        {/* Gradient definition matching current timeline-line-gradient from globals.css */}
         <linearGradient
           id="timeline-gradient"
           gradientTransform={orientation === 'horizontal' ? 'rotate(0)' : 'rotate(90)'}
@@ -169,39 +182,80 @@ export function AnimatedTimelineSVG({
           <stop offset="100%" stopColor="rgba(139, 92, 246, 0.3)" />
         </linearGradient>
 
-        {/* Glow filter for depth */}
         <filter id="timeline-glow" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
           <feComposite in="SourceGraphic" in2="blur" operator="over" />
         </filter>
       </defs>
 
-      {/* Main timeline path */}
+      {/* Main timeline line (grows horizontally/vertically) */}
       <motion.path
-        d={pathD}
+        d={mainLinePath}
         stroke="url(#timeline-gradient)"
-        strokeWidth={16} // Double the current 8px
-        strokeLinecap="butt" // Flat ends (not rounded)
-        strokeLinejoin="miter" // Sharp 90° corners, not rounded
+        strokeWidth={16}
+        strokeLinecap="butt"
+        strokeLinejoin="miter"
         fill="none"
         filter="url(#timeline-glow)"
         initial={{ pathLength: 0 }}
         animate={{
-          pathLength: isAnimating ? pathLength : 1,
+          pathLength: isAnimating ? mainLineLength : 1,
         }}
         transition={{
           pathLength: {
             type: 'tween',
-            duration: 2.0, // 2000ms for smooth, organic branch growth
-            ease: [0.25, 0.1, 0.25, 1.0], // Ease curve for natural, flowing growth
+            duration: 1.0, // Main line grows in 1 second
+            ease: [0.25, 0.1, 0.25, 1.0],
           },
         }}
         style={{
-          mixBlendMode: 'multiply', // Match current timeline blend mode
+          mixBlendMode: 'multiply',
         }}
       />
 
-      {/* Thin dashed connector line to plus button */}
+      {/* Individual stem paths */}
+      {stemPaths.map((stem, idx) => {
+        // Only show stems up to the animating index
+        if (idx > animatingToIndex) return null
+
+        // Only the NEWEST stem (at animatingToIndex) should animate
+        // Previous stems should be fully visible
+        const isNewStem = isAnimating && idx === animatingToIndex
+
+        // Delay: stem starts after main line reaches the junction
+        // Main line grows full length in 1s, so delay is proportional to position
+        const stemDelay = isNewStem ? 1.0 : 0 // Start after main line finishes
+
+        return (
+          <motion.path
+            key={`stem-${idx}`}
+            d={stem.path}
+            stroke="url(#timeline-gradient)"
+            strokeWidth={16}
+            strokeLinecap="butt"
+            strokeLinejoin="miter"
+            fill="none"
+            filter="url(#timeline-glow)"
+            initial={{ pathLength: isNewStem ? 0 : 1 }}
+            animate={{
+              pathLength: 1,
+            }}
+            transition={{
+              pathLength: {
+                type: 'tween',
+                duration: isNewStem ? 0.6 : 0, // Stem grows in 0.6s
+                ease: [0.25, 0.1, 0.25, 1.0],
+                delay: stemDelay,
+              },
+            }}
+            style={{
+              mixBlendMode: 'multiply',
+            }}
+          />
+        )
+      })}
+
+      {/* Connector line to plus button */}
       <path
         d={connectorLine}
         stroke="rgba(139, 92, 246, 0.5)"
