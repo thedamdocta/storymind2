@@ -72,9 +72,9 @@ function TimelineNodeComponent({
             whileHover={{ scale: 1.15 }}
             transition={{
               type: "spring",
-              stiffness: isAnimatingIn ? 350 : 400,
+              stiffness: isAnimatingIn ? 300 : 400,
               damping: 25,
-              delay: isAnimatingIn ? 0.3 : 0
+              delay: isAnimatingIn ? 0.1 : 0  // Minimal delay, node appears as line reaches it
             }}
           >
             <div

@@ -123,7 +123,7 @@ export function TimelineView() {
     return calculatePlusPosition(nodeOrder.length, orientation)
   }, [nodeOrder.length, orientation])
 
-  // Auto-pan on node creation
+  // Auto-pan on node creation (delayed to let animation complete)
   const lastAnimatingNodeIdRef = React.useRef<string | null>(null)
 
   React.useEffect(() => {
@@ -148,18 +148,23 @@ export function TimelineView() {
     const newNodePosition = nodePositions[newNodeIndex]
     if (!newNodePosition) return
 
-    const targetX = newNodePosition.x * viewportZoom
-    const targetY = newNodePosition.y * viewportZoom
+    // Delay the pan until after timeline animation completes (2000ms total animation)
+    // Node is created at 1600ms, so we wait 500ms more for the branch to finish growing
+    const panTimer = setTimeout(() => {
+      const targetX = newNodePosition.x * viewportZoom
+      const targetY = newNodePosition.y * viewportZoom
 
-    if (orientation === 'horizontal') {
-      const newPanX = container.offsetWidth / 2 - targetX
-      setViewportPan({ x: newPanX, y: currentPanRef.current.y })
-    } else {
-      const newPanY = container.offsetHeight / 2 - targetY
-      setViewportPan({ x: currentPanRef.current.x, y: newPanY })
-    }
+      if (orientation === 'horizontal') {
+        const newPanX = container.offsetWidth / 2 - targetX
+        setViewportPan({ x: newPanX, y: currentPanRef.current.y })
+      } else {
+        const newPanY = container.offsetHeight / 2 - targetY
+        setViewportPan({ x: currentPanRef.current.x, y: newPanY })
+      }
+    }, 500)
 
     lastAnimatingNodeIdRef.current = animatingNodeId
+    return () => clearTimeout(panTimer)
   }, [animatingNodeId, nodePositions, nodeOrder, orientation, viewportZoom, setViewportPan])
 
   // Auto-pan on node deletion with smooth transition

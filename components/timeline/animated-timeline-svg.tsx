@@ -40,32 +40,31 @@ function calculateTimelinePath(
   // Start at the end of the starting node
   let path = `M ${startingNodePos.x} ${startingNodePos.y}`
 
-  // For each node up to animatingToIndex
+  // For each node, draw: main line segment → stem out → stem back
+  // This creates a continuous path that branches naturally
   for (let i = 0; i <= animatingToIndex && i < nodes.length; i++) {
     const isEven = i % 2 === 0
     const mainAxisOffset = (i + 1) * NODE_SPACING
 
     if (orientation === 'horizontal') {
-      // Extend along main horizontal axis to junction point
       const mainX = startingNodePos.x + mainAxisOffset
-      path += ` L ${mainX} ${startingNodePos.y}`
-
-      // Hard 90° turn and extend stem to node
       const stemY = startingNodePos.y + (isEven ? -STEM_LENGTH : STEM_LENGTH)
-      path += ` L ${mainX} ${stemY}`
 
-      // Return back to main timeline (important for next segment)
+      // Grow along main line to junction
+      path += ` L ${mainX} ${startingNodePos.y}`
+      // Branch out to node
+      path += ` L ${mainX} ${stemY}`
+      // Return to main line to continue
       path += ` L ${mainX} ${startingNodePos.y}`
     } else {
-      // Extend along main vertical axis to junction point
       const mainY = startingNodePos.y + mainAxisOffset
-      path += ` L ${startingNodePos.x} ${mainY}`
-
-      // Hard 90° turn and extend stem to node
       const stemX = startingNodePos.x + (isEven ? -STEM_LENGTH : STEM_LENGTH)
-      path += ` L ${stemX} ${mainY}`
 
-      // Return back to main timeline (important for next segment)
+      // Grow along main line to junction
+      path += ` L ${startingNodePos.x} ${mainY}`
+      // Branch out to node
+      path += ` L ${stemX} ${mainY}`
+      // Return to main line to continue
       path += ` L ${startingNodePos.x} ${mainY}`
     }
   }
@@ -97,19 +96,28 @@ export function AnimatedTimelineSVG({
   )
 
   // Calculate the previous path length for animation
-  const previousIndex = React.useRef(animatingToIndex)
+  const previousIndex = React.useRef(-1)
   const [pathLength, setPathLength] = React.useState(1)
 
   React.useEffect(() => {
-    if (isAnimating) {
-      // Calculate pathLength from current position to new position
-      const totalNodes = nodes.length
-      if (totalNodes > 0) {
-        const newLength = (animatingToIndex + 1) / totalNodes
-        setPathLength(newLength)
+    if (isAnimating && nodes.length > 0) {
+      // Calculate what fraction of the NEW path represents the OLD nodes
+      // This ensures we only animate the NEW segment, not redraw everything
+      const totalNodes = animatingToIndex + 1
+      const previousNodeCount = Math.max(0, previousIndex.current + 1)
+
+      // Start from showing previous nodes (fraction of new path)
+      const startLength = previousNodeCount / totalNodes
+      setPathLength(startLength)
+
+      // Then animate to full path after a brief delay
+      const timer = setTimeout(() => {
+        setPathLength(1)
         previousIndex.current = animatingToIndex
-      }
-    } else {
+      }, 50)
+
+      return () => clearTimeout(timer)
+    } else if (!isAnimating) {
       // When not animating, show full path
       setPathLength(1)
     }
@@ -184,8 +192,8 @@ export function AnimatedTimelineSVG({
         transition={{
           pathLength: {
             type: 'tween',
-            duration: 0.8, // 800ms for smooth snake motion
-            ease: [0.4, 0.0, 0.2, 1], // Custom easing curve
+            duration: 2.0, // 2000ms for smooth, organic branch growth
+            ease: [0.25, 0.1, 0.25, 1.0], // Ease curve for natural, flowing growth
           },
         }}
         style={{

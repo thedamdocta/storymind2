@@ -267,8 +267,9 @@ export const useStoryStore = create<StoryState>()(
         // Set animating state
         set({ isAnimatingNode: true })
 
-        // Wait for path animation to mostly complete
-        await new Promise((resolve) => setTimeout(resolve, 500))
+        // Wait for path animation to mostly complete (2.0s total animation)
+        // Let the branch grow ~80% before the node appears
+        await new Promise((resolve) => setTimeout(resolve, 1600))
 
         // Create the node (triggers entrance animation)
         const newNodeId = addNode('')
